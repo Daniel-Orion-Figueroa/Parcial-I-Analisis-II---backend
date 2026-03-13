@@ -1,0 +1,8 @@
+POST http://localhost:8080/loans
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzdGV2ZW5AbWFpbC5jb20iLCJyb2xlIjoiRVNUVURJQU5URSIsImlhdCI6MTc3MzI4OTA3MCwiZXhwIjoxNzczMzI1MDcwfQ.wsBXAd5uz084oDk2qZX5_5ahSAdfTGlQpevTjCn0VhM
+Content-Type: application/json
+
+{
+ "user": { "id": 1 },
+ "book": { "id": 2 }
+}
