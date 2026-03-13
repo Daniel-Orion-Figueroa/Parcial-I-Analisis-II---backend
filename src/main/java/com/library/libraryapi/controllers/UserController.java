@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import com.library.libraryapi.dto.ApiResponse;
+import com.library.libraryapi.dto.UserDto;
+import com.library.libraryapi.dto.DtoMapper;
 import com.library.libraryapi.models.User;
 import com.library.libraryapi.services.UserService;
 
@@ -16,28 +18,32 @@ import com.library.libraryapi.services.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final DtoMapper dtoMapper;
 
-    // Obtener todos los usuarios
+    // Obtener todos los usuarios (con DTOs para evitar referencias circulares)
     @GetMapping
-    public ResponseEntity<ApiResponse<List<User>>> getUsers() {
+    public ResponseEntity<ApiResponse<List<UserDto>>> getUsers() {
         List<User> users = userService.getAllUsers();
-        return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", users));
+        List<UserDto> userDtos = dtoMapper.toUserDtoList(users);
+        return ResponseEntity.ok(new ApiResponse<>("Users retrieved successfully", userDtos));
     }
 
     // Crear usuario
     @PostMapping
-    public ResponseEntity<ApiResponse<User>> createUser(@RequestBody User user) {
+    public ResponseEntity<ApiResponse<UserDto>> createUser(@RequestBody User user) {
         User newUser = userService.createUser(user);
+        UserDto userDto = dtoMapper.toUserDto(newUser);
         return ResponseEntity.status(201)
-                .body(new ApiResponse<>("User created successfully", newUser));
+                .body(new ApiResponse<>("User created successfully", userDto));
     }
 
     // Obtener usuario por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Long id) {
         try {
             User user = userService.getUserById(id);
-            return ResponseEntity.ok(new ApiResponse<>("User retrieved successfully", user));
+            UserDto userDto = dtoMapper.toUserDto(user);
+            return ResponseEntity.ok(new ApiResponse<>("User retrieved successfully", userDto));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(e.getMessage(), null));
@@ -46,10 +52,11 @@ public class UserController {
 
     // Actualizar usuario
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<User>> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<ApiResponse<UserDto>> updateUser(@PathVariable Long id, @RequestBody User user) {
         try {
             User updatedUser = userService.updateUser(id, user);
-            return ResponseEntity.ok(new ApiResponse<>("User updated successfully", updatedUser));
+            UserDto userDto = dtoMapper.toUserDto(updatedUser);
+            return ResponseEntity.ok(new ApiResponse<>("User updated successfully", userDto));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(e.getMessage(), null));

@@ -22,7 +22,7 @@ public class SecurityConfig {
                         .requestMatchers("/books/**").permitAll()
                         .requestMatchers("/reservations/**").permitAll()
                         .requestMatchers("/loans/**").permitAll()
-                        .requestMatchers("/users/**").hasRole("ADMIN")
+                        .requestMatchers("/users/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

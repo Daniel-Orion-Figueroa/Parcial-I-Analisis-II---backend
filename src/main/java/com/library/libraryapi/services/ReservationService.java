@@ -78,4 +78,36 @@ public class ReservationService {
 
     }
 
+    public Reservation updateReservation(Long id, Reservation reservation) {
+        // Buscar la reserva existente
+        Reservation existingReservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        // Validar que la reserva exista y no esté cancelada
+        if (existingReservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new RuntimeException("Cannot update a cancelled reservation");
+        }
+
+        // Si el libro cambió, restaurar stock del libro anterior
+        if (!existingReservation.getBook().getId().equals(reservation.getBook().getId())) {
+            Book oldBook = existingReservation.getBook();
+            bookService.increaseAvailableQuantity(oldBook);
+
+            // Reducir stock del nuevo libro
+            Book newBook = reservation.getBook();
+            if (newBook.getAvailableQuantity() <= 0) {
+                throw new RuntimeException("New book is not available");
+            }
+            bookService.decreaseAvailableQuantity(newBook);
+        }
+
+        // Actualizar los campos
+        existingReservation.setBook(reservation.getBook());
+        existingReservation.setUser(reservation.getUser());
+        existingReservation.setReservationDate(reservation.getReservationDate());
+        existingReservation.setStatus(reservation.getStatus());
+
+        return reservationRepository.save(existingReservation);
+    }
+
 }

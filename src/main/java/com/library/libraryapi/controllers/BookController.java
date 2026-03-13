@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import com.library.libraryapi.dto.ApiResponse;
+import com.library.libraryapi.dto.BookDto;
+import com.library.libraryapi.dto.DtoMapper;
 import com.library.libraryapi.models.Book;
 import com.library.libraryapi.services.BookService;
 
@@ -16,34 +18,39 @@ import com.library.libraryapi.services.BookService;
 public class BookController {
 
     private final BookService bookService;
+    private final DtoMapper dtoMapper;
 
-    // Obtener todos los libros
+    // Obtener todos los libros (con DTOs para evitar referencias circulares)
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Book>>> getBooks() {
+    public ResponseEntity<ApiResponse<List<BookDto>>> getBooks() {
         List<Book> books = bookService.getAllBooks();
-        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", books));
+        List<BookDto> bookDtos = dtoMapper.toBookDtoList(books);
+        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", bookDtos));
     }
 
     // Crear un libro
     @PostMapping
-    public ResponseEntity<ApiResponse<Book>> createBook(@RequestBody Book book) {
+    public ResponseEntity<ApiResponse<BookDto>> createBook(@RequestBody Book book) {
         Book newBook = bookService.createBook(book);
+        BookDto bookDto = dtoMapper.toBookDto(newBook);
         return ResponseEntity.status(201)
-                .body(new ApiResponse<>("Book created successfully", newBook));
+                .body(new ApiResponse<>("Book created successfully", bookDto));
     }
 
     // Obtener libro por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Book>> getBookById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BookDto>> getBookById(@PathVariable Long id) {
         Book book = bookService.getBookById(id);
-        return ResponseEntity.ok(new ApiResponse<>("Book retrieved successfully", book));
+        BookDto bookDto = dtoMapper.toBookDto(book);
+        return ResponseEntity.ok(new ApiResponse<>("Book retrieved successfully", bookDto));
     }
 
     // Actualizar libro
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Book>> updateBook(@PathVariable Long id, @RequestBody Book book) {
+    public ResponseEntity<ApiResponse<BookDto>> updateBook(@PathVariable Long id, @RequestBody Book book) {
         Book updatedBook = bookService.updateBook(id, book);
-        return ResponseEntity.ok(new ApiResponse<>("Book updated successfully", updatedBook));
+        BookDto bookDto = dtoMapper.toBookDto(updatedBook);
+        return ResponseEntity.ok(new ApiResponse<>("Book updated successfully", bookDto));
     }
 
     // Eliminar libro
@@ -55,15 +62,17 @@ public class BookController {
 
     // Buscar libros por título
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<Book>>> searchBooks(@RequestParam String title) {
+    public ResponseEntity<ApiResponse<List<BookDto>>> searchBooks(@RequestParam String title) {
         List<Book> books = bookService.searchBooksByTitle(title);
-        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", books));
+        List<BookDto> bookDtos = dtoMapper.toBookDtoList(books);
+        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", bookDtos));
     }
 
     // Buscar libros por autor
     @GetMapping("/search/author")
-    public ResponseEntity<ApiResponse<List<Book>>> searchBooksByAuthor(@RequestParam String author) {
+    public ResponseEntity<ApiResponse<List<BookDto>>> searchBooksByAuthor(@RequestParam String author) {
         List<Book> books = bookService.searchBooksByAuthor(author);
-        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", books));
+        List<BookDto> bookDtos = dtoMapper.toBookDtoList(books);
+        return ResponseEntity.ok(new ApiResponse<>("Books retrieved successfully", bookDtos));
     }
 }
